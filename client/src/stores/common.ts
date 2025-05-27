@@ -1,4 +1,4 @@
-import { ref, computed } from 'Vue'
+import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
 import { login } from '@/api/login'
