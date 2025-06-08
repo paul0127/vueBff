@@ -40,6 +40,7 @@ const labelBottom = inject('labelBottom')
 const rules = inject('rules')
 const model = inject('model')
 
+const defaultValue = ref('')
 const errorMessage = ref()
 const isErr = ref(false)
 
@@ -76,6 +77,16 @@ const validateItem = () => {
   return true
 }
 
+const resetField = () => {
+  console.log(defaultValue.value)
+  if (props.prop && model && defaultValue.value !== undefined) {
+    
+    model[props.prop] = defaultValue.value
+    isErr.value = false
+    errorMessage.value = null
+  }
+}
+
 const registerFormItem = inject('registerFormItem')
 const unregisterFormItem = inject('unregisterFormItem')
 
@@ -85,10 +96,14 @@ const reset = () => {
 }
 
 onMounted(() => {
-  registerFormItem({ validateItem, reset })
+  if (itemModel.value !== undefined) {
+    defaultValue.value = itemModel.value
+  }
+
+  registerFormItem({ validateItem, reset,resetField })
 })
 onBeforeUnmount(() => {
-  unregisterFormItem({ validateItem, reset })
+  unregisterFormItem({ validateItem, reset,resetField })
 })
 
 const handleInput = () => {
@@ -101,7 +116,7 @@ const handleBlur = () => {
   if (triggered) validateItem()
 }
 
-defineExpose({ validateItem, reset })
+defineExpose({ validateItem, reset, resetField })
 </script>
 <style lang="scss" scoped>
 .col {

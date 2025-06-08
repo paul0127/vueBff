@@ -54,6 +54,13 @@ const resetForm = () => {
   })
 }
 
+const resetFields = () => {
+  console.log('resetFields')
+  formItems.value.forEach((item) => {
+    item.resetField?.()
+  })
+}
+
 provide('labelWidth', props.labelWidth)
 provide('labelPossition', props.labelPossition)
 provide('labelBottom', props.labelBottom)
@@ -63,7 +70,7 @@ provide('registerFormItem', registerFormItem)
 provide('unregisterFormItem', unregisterFormItem)
 provide('resetForm', resetForm)
 
-defineExpose({ validate, resetForm })
+defineExpose({ validate, resetForm, resetFields })
 </script>
 
 <style lang="scss" scoped>

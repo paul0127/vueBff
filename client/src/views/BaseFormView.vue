@@ -21,7 +21,7 @@ import { ref,useTemplateRef } from 'vue'
 import { BaseForm, BaseFormItem, BaseInput,BaseRow,BaseCol,SearchBtn } from '@/components/V2';
 
 const form = ref({
-    name:'',
+    name:'paul',
     password:''
 })
 
@@ -42,6 +42,6 @@ const search = async () => {
 }
 
 const clear = () => {
-    formRef.value.resetForm()
+    formRef.value.resetFields()
 }
 </script>
