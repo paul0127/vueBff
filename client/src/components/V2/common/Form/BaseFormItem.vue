@@ -18,7 +18,7 @@
   </div>
 </template>
 <script setup>
-import { ref, inject, computed, watch,onMounted,onBeforeUnmount,defineExpose } from 'vue'
+import { ref, inject, computed, onMounted, onBeforeUnmount, defineExpose } from 'vue'
 const props = defineProps({
   id: {
     type: Number,
@@ -79,11 +79,16 @@ const validateItem = () => {
 const registerFormItem = inject('registerFormItem')
 const unregisterFormItem = inject('unregisterFormItem')
 
+const reset = () => {
+  isErr.value = false
+  errorMessage.value = null
+}
+
 onMounted(() => {
-  registerFormItem({ validateItem })
+  registerFormItem({ validateItem, reset })
 })
 onBeforeUnmount(() => {
-  unregisterFormItem({ validateItem })
+  unregisterFormItem({ validateItem, reset })
 })
 
 const handleInput = () => {
@@ -96,7 +101,7 @@ const handleBlur = () => {
   if (triggered) validateItem()
 }
 
-defineExpose({ validateItem })
+defineExpose({ validateItem, reset })
 </script>
 <style lang="scss" scoped>
 .col {

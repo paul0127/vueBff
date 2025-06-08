@@ -36,6 +36,24 @@ const validate = async () => {
   return isValid
 }
 
+// 重設：清空 model 並重置所有 item 的狀態
+const resetForm = () => {
+  // 清空 model
+  for (const key in props.model) {
+    if (Array.isArray(props.model[key])) {
+      props.model[key] = []
+    } else if (typeof props.model[key] === 'object' && props.model[key] !== null) {
+      props.model[key] = {}
+    } else {
+      props.model[key] = ''
+    }
+  }
+  // 通知每個 BaseFormItem 清除錯誤
+  formItems.value.forEach(item => {
+    item.reset?.()
+  })
+}
+
 provide('labelWidth', props.labelWidth)
 provide('labelPossition', props.labelPossition)
 provide('labelBottom', props.labelBottom)
@@ -43,8 +61,9 @@ provide('rules', props.rules)
 provide('model', props.model)
 provide('registerFormItem', registerFormItem)
 provide('unregisterFormItem', unregisterFormItem)
+provide('resetForm', resetForm)
 
-defineExpose({ validate })
+defineExpose({ validate, resetForm })
 </script>
 
 <style lang="scss" scoped>

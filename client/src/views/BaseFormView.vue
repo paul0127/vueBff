@@ -14,6 +14,7 @@
         </BaseRow>
     </BaseForm>
     <SearchBtn class="large" @click="search()" />
+    <SearchBtn class="large" @click="clear()" />
 </template>
 <script setup>
 import { ref,useTemplateRef } from 'vue'
@@ -38,5 +39,9 @@ const formRef = useTemplateRef('formRef')
 const search = async () => {
     const valid = await formRef.value.validate()
     console.log(valid)
+}
+
+const clear = () => {
+    formRef.value.resetForm()
 }
 </script>
