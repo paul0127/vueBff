@@ -17,13 +17,22 @@
     <SearchBtn class="large" @click="clear()" />
 </template>
 <script setup>
-import { ref,useTemplateRef } from 'vue'
+import { ref,reactive,useTemplateRef } from 'vue'
 import { BaseForm, BaseFormItem, BaseInput,BaseRow,BaseCol,SearchBtn } from '@/components/V2';
 
-const form = ref({
+const form = reactive({
     name:'paul',
     password:''
 })
+
+const checkPassword = (rule, value, callback) => {
+    console.log(form)
+    if (value === form.name) {
+        callback(new Error('密碼不可以和姓名一樣'))
+    } else {
+        callback()
+    }
+}
 
 const rules = ref({
     name: [
@@ -31,6 +40,7 @@ const rules = ref({
     ],
     password: [
         { required: true, message: '請輸入密碼', trigger: 'blur' },
+        { validator:checkPassword}
     ]
 })
 

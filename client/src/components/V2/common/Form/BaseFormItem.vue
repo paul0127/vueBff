@@ -18,7 +18,7 @@
   </div>
 </template>
 <script setup>
-import { ref, inject, computed, onMounted, onBeforeUnmount, defineExpose } from 'vue'
+import { ref, inject, computed, watch, onMounted, onBeforeUnmount, defineExpose } from 'vue'
 const props = defineProps({
   id: {
     type: Number,
@@ -116,7 +116,11 @@ const handleBlur = () => {
   if (triggered) validateItem()
 }
 
-defineExpose({ validateItem, reset, resetField })
+// defineExpose({ validateItem, reset, resetField })
+
+watch(itemModel,()=>{
+  validateItem()
+})
 </script>
 <style lang="scss" scoped>
 .col {
