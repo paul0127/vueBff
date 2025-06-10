@@ -2,30 +2,25 @@
   <div class="datepicker" ref="picker">
     <input
       type="text"
-      :value="displayText"
-      readonly
-      @click="toggle"
-      placeholder="選擇民國日期"
+      v-model="inputText"
+      @blur="onBlur"
+      @keyup.enter="onBlur"
+      @focus="open = true"
+      placeholder="民國 113-06-06"
     />
 
     <div v-if="open" class="calendar">
       <div class="calendar-header">
         <button @click="prevYear">« 年</button>
         <button @click="prevMonth">← 月</button>
-        <span>
-            民國 {{ minguoYear }} 年 {{ currentMonth + 1 }} 月
-        </span>
+        <span>民國 {{ minguoYear }} 年 {{ currentMonth + 1 }} 月</span>
         <button @click="nextMonth">月 →</button>
         <button @click="nextYear">年 »</button>
       </div>
 
       <div class="calendar-grid">
         <div class="day-name" v-for="d in days" :key="d">{{ d }}</div>
-        <div
-          v-for="n in startOffset"
-          :key="'blank-' + n"
-          class="day blank"
-        ></div>
+        <div v-for="n in startOffset" :key="'blank-' + n" class="day blank"></div>
         <div
           v-for="day in daysInMonth"
           :key="day"
@@ -43,81 +38,50 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 
-// define model
-const props = defineProps({
-  modelValue: Date
-})
-const emit = defineEmits(['update:modelValue'])
+const model = defineModel() // 父層傳入 v-model
 
 const open = ref(false)
-const selectedDate = ref(props.modelValue ?? null)
+const selectedDate = ref(null)
+const inputText = ref('')
 
 const today = new Date()
-const currentYear = ref(selectedDate.value?.getFullYear() ?? today.getFullYear())
-const currentMonth = ref(selectedDate.value?.getMonth() ?? today.getMonth())
+const currentYear = ref(today.getFullYear())
+const currentMonth = ref(today.getMonth())
 
-// 星期（日到六）
 const days = ['日', '一', '二', '三', '四', '五', '六']
 
-// 民國年
 const minguoYear = computed(() => currentYear.value - 1911)
 
-// 每月天數
-const daysInMonth = computed(() => {
-  return new Date(currentYear.value, currentMonth.value + 1, 0).getDate()
-})
+const daysInMonth = computed(() => new Date(currentYear.value, currentMonth.value + 1, 0).getDate())
 
-// 本月第一天是星期幾
-const startOffset = computed(() => {
-  return new Date(currentYear.value, currentMonth.value, 1).getDay()
-})
+const startOffset = computed(() => new Date(currentYear.value, currentMonth.value, 1).getDay())
 
-// 顯示格式
-const displayText = computed(() => {
-  if (!selectedDate.value) return ''
-  const y = selectedDate.value.getFullYear() - 1911
-  const m = selectedDate.value.getMonth() + 1
-  const d = selectedDate.value.getDate()
-  return `民國 ${y} 年 ${m} 月 ${d} 日`
-})
-
-// 切換月份
-const prevMonth = () => {
-  if (currentMonth.value === 0) {
-    currentMonth.value = 11
-    currentYear.value--
-  } else {
-    currentMonth.value--
-  }
+const formatMinguoYMD = (date) => {
+  const y = date.getFullYear() - 1911
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }
 
-const nextMonth = () => {
-  if (currentMonth.value === 11) {
-    currentMonth.value = 0
-    currentYear.value++
-  } else {
-    currentMonth.value++
-  }
+const parseMinguoYMD = (str) => {
+  const match = str.match(/^(\d{2,3})-(\d{1,2})-(\d{1,2})$/)
+  if (!match) return null
+  const y = parseInt(match[1]) + 1911
+  const m = parseInt(match[2]) - 1
+  const d = parseInt(match[3])
+  const date = new Date(y, m, d)
+  return isNaN(date.getTime()) ? null : date
 }
 
-// 切換年
-const prevYear = () => {
-  currentYear.value--
-}
-
-const nextYear = () => {
-  currentYear.value++
-}
-
-// 選擇日期
+// 選擇日曆
 const selectDate = (day) => {
   const date = new Date(currentYear.value, currentMonth.value, day)
   selectedDate.value = date
-  emit('update:modelValue', date)
+  model.value = date
+  inputText.value = formatMinguoYMD(date)
   open.value = false
 }
 
-// 是否已選中
 const isSelected = (day) => {
   if (!selectedDate.value) return false
   return (
@@ -127,33 +91,65 @@ const isSelected = (day) => {
   )
 }
 
-// 切換 popup
-const toggle = () => {
-  open.value = !open.value
+const prevMonth = () => {
+  if (currentMonth.value === 0) {
+    currentMonth.value = 11
+    currentYear.value--
+  } else {
+    currentMonth.value--
+  }
+}
+const nextMonth = () => {
+  if (currentMonth.value === 11) {
+    currentMonth.value = 0
+    currentYear.value++
+  } else {
+    currentMonth.value++
+  }
+}
+const prevYear = () => currentYear.value--
+const nextYear = () => currentYear.value++
+
+// 當使用者手動輸入後離開 input，觸發解析
+const onBlur = () => {
+  const parsed = parseMinguoYMD(inputText.value)
+  if (parsed) {
+    selectedDate.value = parsed
+    currentYear.value = parsed.getFullYear()
+    currentMonth.value = parsed.getMonth()
+    model.value = parsed
+  }
 }
 
-// 關閉 popup 點外面
+// 外部 v-model 傳入更新
+watch(
+  () => model.value,
+  (val) => {
+    if (typeof val === 'string') {
+      const parsed = new Date(val)
+      selectedDate.value = parsed
+    } else if (val instanceof Date) {
+      selectedDate.value = val
+    }
+
+    if (selectedDate.value && !isNaN(selectedDate.value.getTime())) {
+      inputText.value = formatMinguoYMD(selectedDate.value)
+      currentYear.value = selectedDate.value.getFullYear()
+      currentMonth.value = selectedDate.value.getMonth()
+    }
+  },
+  { immediate: true }
+)
+
+// 點外部關閉 popup
 const picker = ref(null)
 const handleClickOutside = (e) => {
   if (picker.value && !picker.value.contains(e.target)) {
     open.value = false
   }
 }
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
-onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
-
-// 外部值變更時同步更新
-watch(() => props.modelValue, (val) => {
-  selectedDate.value = val
-  if (val) {
-    currentYear.value = val.getFullYear()
-    currentMonth.value = val.getMonth()
-  }
-})
+onMounted(() => document.addEventListener('click', handleClickOutside))
+onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 </script>
 
 <style scoped>
