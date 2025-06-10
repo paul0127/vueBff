@@ -3,12 +3,12 @@
         <template #default="{ model, errors }"> 
             <BaseInput label="姓名" field="name" :model="model" :errors="errors" /> 
             <BaseSelect label="性別" field="gender" :model="model" :errors="errors" :options="[ { label: '男', value: 'male' }, { label: '女', value: 'female' } ]" /> 
-            <BaseDatePicker label="生日" field="birthday" :model="model" :errors="errors" /> 
+            <datepick v-model="birthday" /> 
         </template> 
     </BaseForm>
     <button @click="onSubmit">送出</button>
 
-    <datepick />
+    <!-- <datepick /> -->
 </template>
 
 <script setup lang="ts">
@@ -28,4 +28,6 @@
             await axios.post('/api/submit', form.value) 
         } 
     } 
+
+    const birthday = ref('2024-06-06')
 </script>
