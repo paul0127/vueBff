@@ -1,5 +1,8 @@
 <template>
-  <div class="baseRow" :style="{ justifyContent: justify, alignItems: align }">
+  <div
+    class="baseRow"
+    :style="{ justifyContent: justify, alignItems: align, '--padding': padding }"
+  >
     <slot />
   </div>
 </template>
@@ -19,6 +22,8 @@ const props = defineProps({
   },
 })
 
+const padding = props.gutter ? `${props.gutter / 2}px` : '0'
+
 provide('gutter', props.gutter)
 </script>
 <style lang="scss" scoped>
@@ -28,5 +33,6 @@ provide('gutter', props.gutter)
   flex-wrap: wrap;
   position: relative;
   box-sizing: border-box;
+  margin: 0 calc(-1 * var(--padding));
 }
 </style>

@@ -22,7 +22,7 @@ colClass.value = `base-col-${props.span}`
 .baseCol {
   padding: 0 var(--padding);
 }
-@for $i from 1 to 24 {
+@for $i from 1 through 24 {
   .base-col-#{$i} {
     display: block;
     max-width: calc(100% / 24 * $i);

@@ -1,28 +1,57 @@
 <template>
-    <div class="dropdown select_dropdown" :id="sendSelectId">
-        <button class="btn btn_input_select_dropdown dropdown-toggle" :class="{ 'insideStyle': sendInsideStyle }"
-            type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            {{ sendSelectItem }}
-        </button>
-        <ul class="dropdown-menu">
-            <li v-for="(item,index ,id) in sendGroup" :key="id" :value="item.id" @click.prevent="sendSelectGroup(item)">
-                <span v-show="sendHasIndex"> {{ index }} -</span> {{ item.subject }}
-            </li>
-        </ul>
-    </div>
+  <div class="dropdown select_dropdown" :id="id" :style="{ width: width }">
+    <button
+      class="btn btn_input_select_dropdown dropdown-toggle"
+      type="button"
+      data-bs-toggle="dropdown"
+      aria-expanded="false"
+      :disabled="disabled"
+    >
+      {{ slectedItem }}
+    </button>
+    <ul class="dropdown-menu">
+      <li v-for="(item, index) in optionList" :key="index" @click.prevent="selectItem(item)">
+        {{ item.text }}
+      </li>
+    </ul>
+  </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
-    sendSelectId: { type: String },
-    sendSelectItem: { type: String },
-    sendGroup: { type: Object },
-    sendInsideStyle: { type: Boolean },
-    sendHasIndex: { type: Boolean },
+  id: { type: Number },
+  optionList: { type: Array },
+  width: {
+    type: String,
+    default: '100%',
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 })
-const emits = defineEmits(['sendSelectGroup']);
-const sendSelectGroup = (item) =>{
-    emits('sendSelectGroup',item)
+
+const model = defineModel()
+
+const emit = defineEmits(['change'])
+
+const slectedItem = computed(() => {
+  if (!Array.isArray(props.optionList)) return null
+  const item = props.optionList.find((item) => item.value == model.value)
+
+  return item ? item.text : null
+})
+
+const selectItem = (item) => {
+  model.value = item.value
+  emit('change')
 }
 </script>
-
+<style lang="scss" scoped>
+.btn_input_select_dropdown:disabled {
+  background-color: var(--bs-secondary-bg);
+  opacity: 1;
+}
+</style>

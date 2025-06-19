@@ -46,7 +46,7 @@ import { commonStore } from '@/stores/common'
 
 const store = commonStore()
 
-// const HeaderBlock = defineAsyncComponent(() => import('remote_app/Header'))
+const HeaderBlock = defineAsyncComponent(() => import('remote_app/Header'))
 
 const username = ref('')
 const password = ref('')

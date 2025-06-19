@@ -1,31 +1,34 @@
 <template>
   <nav style="--bs-breadcrumb-divider: '>'" aria-label="breadcrumb">
     <ol class="breadcrumb">
-      <li
+      <router-link
         class="breadcrumb-item"
-        v-for="(item, id) in sendBreadcrumbLists"
+        :class="{ disabled: !item.href }"
+        v-for="(item, id) in breadcrumbLists"
         :key="id"
-        :class="{ active: item.active }"
-        :style="{ cursor: cursorDisplay }"
-        @click="toPagePath(item)"
+        :to="item.href"
       >
-        <i class="bi bi-house-door" v-show="item.icon !== ''" ></i
-        >{{ item.title }}
-      </li>
+        <i :class="item.icon" v-if="item.icon"></i>{{ item.title }}
+      </router-link>
     </ol>
   </nav>
 </template>
 
 <script setup>
+import { useRoute, useRouter } from 'vue-router'
 const props = defineProps({
-  sendBreadcrumbLists: { type: Array },
+  breadcrumbLists: { type: Array },
 })
 
-const toPagePath = (item) => {
-  if (!item.href) router.push({ path: item.href })
-}
-
-const cursorDisplay = (item) => {
-    return item.href ? 'pointer' : 'default'
-}
+const route = useRoute()
+const router = useRouter()
 </script>
+<style lang="scss" scoped>
+a{
+  color: #000;
+  text-decoration: none;
+}
+.disabled{
+  pointer-events: none;
+}
+</style>

@@ -7,12 +7,16 @@
         </template> 
     </BaseForm>
     <button @click="onSubmit">送出</button>
-
+    <Collapse>
+        <template #toggle>點我展開/收合</template>
+        <p>這是一段可以展開或收合的內容。</p>
+    </Collapse>
     <!-- <datepick /> -->
 </template>
 
 <script setup lang="ts">
     import { ref } from 'vue' 
+    import Collapse from '@/components/V2/common/Collapse/BaseCollapse.vue'
     import BaseForm from '@/components/form/BaseForm.vue' 
     import BaseInput from '@/components/form/BaseInput.vue' 
     import BaseSelect from '@/components/form/BaseSelect.vue' 
