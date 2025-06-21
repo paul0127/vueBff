@@ -52,6 +52,7 @@ import {
   onBeforeUnmount,
   inject,
   useId,
+  defineExpose,
 } from 'vue'
 const props = defineProps({
   disabled: {
@@ -62,7 +63,7 @@ const props = defineProps({
 
 const model = defineModel() // 父層傳入 v-model
 
-const emit = defineEmits(['change'])
+const emit = defineEmits(['change','blur'])
 
 const open = ref(false)
 const selectedDate = ref(null)
@@ -161,6 +162,7 @@ const onBlur = () => {
   currentMonth.value = parsed ? parsed.getMonth() : today.getMonth()
   model.value = formatYMD(parsed)
 
+  emit('blur')
   elFormItem?.validate?.('blur')
 }
 
@@ -211,6 +213,12 @@ onMounted(() => {
   }
 })
 onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
+
+defineExpose({
+  open: () => (open.value = true),
+  close: () => (open.value = false),
+  focus: () => document.getElementById(id)?.focus?.(),
+})
 </script>
 
 <style lang="scss" scoped>
