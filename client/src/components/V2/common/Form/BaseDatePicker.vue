@@ -3,6 +3,7 @@
     <input
       class="form-control"
       type="text"
+      :id="id"
       v-model="inputText"
       :disabled="disabled"
       @blur="onBlur"
@@ -23,7 +24,11 @@
 
       <div class="calendar-grid">
         <div class="day-name" v-for="d in days" :key="d">{{ d }}</div>
-        <div v-for="n in startOffset" :key="'blank-' + n" class="day blank"></div>
+        <div
+          v-for="n in startOffset"
+          :key="'blank-' + n"
+          class="day blank"
+        ></div>
         <div
           v-for="day in daysInMonth"
           :key="day"
@@ -39,7 +44,15 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  inject,
+  useId,
+} from 'vue'
 const props = defineProps({
   disabled: {
     type: Boolean,
@@ -63,9 +76,13 @@ const days = ['日', '一', '二', '三', '四', '五', '六']
 
 const minguoYear = computed(() => currentYear.value - 1911)
 
-const daysInMonth = computed(() => new Date(currentYear.value, currentMonth.value + 1, 0).getDate())
+const daysInMonth = computed(() =>
+  new Date(currentYear.value, currentMonth.value + 1, 0).getDate()
+)
 
-const startOffset = computed(() => new Date(currentYear.value, currentMonth.value, 1).getDay())
+const startOffset = computed(() =>
+  new Date(currentYear.value, currentMonth.value, 1).getDay()
+)
 
 const formatMinguoYMD = (date) => {
   const y = date.getFullYear() - 1911
@@ -75,6 +92,8 @@ const formatMinguoYMD = (date) => {
 }
 
 const formatYMD = (date) => {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) return null
+
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
@@ -91,6 +110,8 @@ const parseMinguoYMD = (str) => {
   return isNaN(date.getTime()) ? null : date
 }
 
+const elFormItem = inject('elFormItem', null)
+
 // 選擇日曆
 const selectDate = (day) => {
   const date = new Date(currentYear.value, currentMonth.value, day)
@@ -100,6 +121,7 @@ const selectDate = (day) => {
   open.value = false
 
   emit('change')
+  elFormItem?.validate?.('change')
 }
 
 const isSelected = (day) => {
@@ -133,18 +155,17 @@ const nextYear = () => currentYear.value++
 // 當使用者手動輸入後離開 input，觸發解析
 const onBlur = () => {
   const parsed = parseMinguoYMD(inputText.value)
-  if (parsed) {
-    selectedDate.value = parsed
-    currentYear.value = parsed.getFullYear()
-    currentMonth.value = parsed.getMonth()
-    model.value = formatYMD(parsed)
-  }
-  emit('change')
+  selectedDate.value = parsed ? parsed : null
+  currentYear.value = parsed ? parsed.getFullYear() : today.getFullYear()
+  currentMonth.value = parsed ? parsed.getMonth() : today.getMonth()
+  model.value = formatYMD(parsed)
+
+  elFormItem?.validate?.('blur')
 }
 
 const onEnter = () => {
   onBlur()
-  if(!inputText.value)open.value = false
+  if (!inputText.value) open.value = false
 }
 
 const onTab = () => {
@@ -179,7 +200,15 @@ const handleClickOutside = (e) => {
     open.value = false
   }
 }
-onMounted(() => document.addEventListener('click', handleClickOutside))
+const id = `datePicker-${useId()}`
+const addInputId = inject('addInputId')
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+  if (typeof addInputId === 'function') {
+    addInputId(id)
+  }
+})
 onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 </script>
 
@@ -190,7 +219,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   width: 100%;
   &:after {
     color: #333;
-    content: "\F214";
+    content: '\F214';
     font-family: 'bootstrap-icons' !important;
     position: absolute;
     right: 5px;

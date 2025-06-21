@@ -24,14 +24,20 @@ const context = inject('radioGroupContext')
 
 const radioValue = computed(() => props.value ?? props.label)
 
-const isChecked = computed(() => context?.modelValue?.value === radioValue.value)
+const isChecked = computed(
+  () => context?.modelValue?.value === radioValue.value
+)
+
+const elFormItem = inject('elFormItem', null)
 
 const onChange = () => {
   context?.updateValue(radioValue.value)
+
+  elFormItem?.validate?.('change')
 }
 </script>
 <style lang="scss" scoped>
 .base-radio {
-    margin-right: 10px;
+  margin-right: 10px;
 }
 </style>

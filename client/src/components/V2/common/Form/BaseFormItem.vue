@@ -7,7 +7,7 @@
     <label
       class="col-form-label"
       :style="{ width: labelWidth, textAlign: labelPosition }"
-      :for="id"
+      :for="firstInputId"
     >
       <template v-if="isRequired"><span class="required">*</span></template>
       {{ label }}
@@ -23,91 +23,95 @@
   </div>
 </template>
 <script setup>
-import { ref, inject, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, inject, computed, onMounted, onBeforeUnmount, provide } from 'vue'
+
 const props = defineProps({
-  id: {
-    type: Number,
-    default: null,
-  },
-  label: {
-    type: String,
-    default: null,
-  },
-  prop: {
-    type: String,
-    default: null,
-  },
+  label: String,
+  prop: String,
   direction: {
     type: String,
-    deafaullt: 'row',
+    default: 'row',
   },
   required: {
     type: Boolean,
-    default: false
+    default: false,
   },
 })
 
-// 將父層參數引入
+// inject 來自 BaseForm 提供的上下文
 const labelWidth = inject('labelWidth')
 const labelPosition = inject('labelPosition')
 const labelBottom = inject('labelBottom')
-const rules = inject('rules')
-const model = inject('model')
+const rules = inject('rules', {})
+const model = inject('model', {})
 
-const defaultValue = ref('')
+const inputIds = ref([])
+
+const addInputId = (id) => {
+  if (!inputIds.value.includes(id)) {
+    inputIds.value.push(id)
+  }
+}
+provide('addInputId', addInputId)
+
+const firstInputId = computed(() => inputIds.value[0] || '')
+
+// 驗證相關
+const defaultValue = ref()
 const errorMessage = ref()
 const isErr = ref(false)
 
-const itemRules = computed(() => {
-  return props.prop && rules[props.prop] ? rules[props.prop] : []
-})
-const itemModel = computed(() => {
-  return props.prop ? model?.[props.prop] : null
-})
+const itemRules = computed(() => (props.prop ? rules[props.prop] || [] : []))
+const itemModel = computed(() => (props.prop ? model?.[props.prop] : null))
 
-const formIsRequired = computed(() => {
-  for (const rule of itemRules.value) {
-    if (rule.required) {
-      return true
-    }
+const formIsRequired = computed(() =>
+  itemRules.value.some((rule) => rule.required)
+)
+const isRequired = computed(() => props.required || formIsRequired.value)
+
+// focus 第一個 input
+const focusFirstInput = () => {
+  const id = firstInputId.value
+  if (id) {
+    const el = document.getElementById(id)
+    el?.focus()
   }
+}
 
-  return false
-})
-
-const isRequired = computed(()=>{
-  return props.required || formIsRequired.value
-})
-
-
-const validateItem = async () => {
+const validateItem = async (trigger = 'change') => {
   isErr.value = false
   errorMessage.value = null
 
   for (const rule of itemRules.value) {
+    // 若非 submit 則比對 trigger
+    if (
+      trigger !== 'submit' &&
+      rule.trigger &&
+      !(Array.isArray(rule.trigger)
+        ? rule.trigger.includes(trigger)
+        : rule.trigger === trigger)
+    )
+      continue
+
+    // required 檢查
     if (
       rule.required &&
-      ((Array.isArray(itemModel.value) && !itemModel.value.length) || !itemModel.value)
+      (!itemModel.value ||
+        (Array.isArray(itemModel.value) && itemModel.value.length === 0))
     ) {
       isErr.value = true
       errorMessage.value = rule.message || ''
       return false
     }
 
+    // 自訂驗證器
     if (rule.validator) {
       try {
-        const result = await new Promise((resolve, reject) => {
-          const res = rule.validator(rule, itemModel.value, (err) => {
-            if (err instanceof Error) {
-              reject(err)
-            } else {
-              resolve(true)
-            }
-          })
-
-          if (res instanceof Promise) {
-            res.then(resolve).cateh(reject)
-          }
+        await new Promise((resolve, reject) => {
+          const res = rule.validator(rule, itemModel.value, (err) =>
+            err instanceof Error ? reject(err) : resolve(true)
+          )
+          if (res instanceof Promise) res.then(resolve).catch(reject)
         })
       } catch (err) {
         isErr.value = true
@@ -128,26 +132,44 @@ const reset = () => {
 const resetField = () => {
   if (props.prop && model && defaultValue.value !== undefined) {
     model[props.prop] = defaultValue.value
-    isErr.value = false
-    errorMessage.value = null
+    reset()
   }
 }
 
+// 提供給 BaseInput 或其他子元件使用
+provide('elFormItem', {
+  validate: validateItem,
+  reset,
+  resetField,
+})
+
+// 給 BaseForm 使用的註冊系統
 const registerFormItem = inject('registerFormItem')
 const unregisterFormItem = inject('unregisterFormItem')
+
+const context = {
+  validateItem,
+  reset,
+  resetField,
+  focus: focusFirstInput,
+  get firstInputId() {
+    return firstInputId.value
+  },
+}
 
 onMounted(() => {
   if (itemModel.value !== undefined) {
     defaultValue.value = itemModel.value
   }
 
-  registerFormItem({ validateItem, reset, resetField })
+  registerFormItem?.(context)
 })
 
 onBeforeUnmount(() => {
-  unregisterFormItem({ validateItem, reset, resetField })
+  unregisterFormItem?.(context)
 })
 </script>
+
 <style lang="scss" scoped>
 .col {
   margin-bottom: 0;

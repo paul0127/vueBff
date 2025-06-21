@@ -30,11 +30,15 @@ const checkValue = computed(() => props.value ?? props.label)
 const isChecked = computed(() => {
   if (context) {
     const val = context.modelValue.value
-    return Array.isArray(val) ? val.includes(checkValue.value) : val === checkValue.value
+    return Array.isArray(val)
+      ? val.includes(checkValue.value)
+      : val === checkValue.value
   } else {
     return modelValue.value === true || modelValue.value === checkValue.value
   }
 })
+
+const elFormItem = inject('elFormItem', null)
 
 const onChange = (e) => {
   const checked = e.target.checked
@@ -43,11 +47,11 @@ const onChange = (e) => {
   } else {
     modelValue.value = checked ? checkValue.value : false
   }
-  emit('change', e)
+  elFormItem?.validate?.('change')
 }
 </script>
 <style lang="scss" scoped>
-.base-check{
+.base-check {
   height: 42px;
   display: flex;
   align-items: center;

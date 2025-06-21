@@ -11,6 +11,8 @@
   />
 </template>
 <script setup>
+import { onMounted, inject, useId } from 'vue'
+
 const props = defineProps({
   id: {
     type: Number,
@@ -32,11 +34,22 @@ const props = defineProps({
 const model = defineModel()
 const emit = defineEmits(['change'])
 
+const elFormItem = inject('elFormItem', null)
+
 const onBlur = (e) => {
-  emit('change', e)
+  elFormItem?.validate?.('blur')
 }
 
 const onInput = (e) => {
-  emit('change', e)
+  elFormItem?.validate?.('change')
 }
+
+const id = props.id || `input-${useId()}`
+const addInputId = inject('addInputId')
+
+onMounted(() => {
+  if (typeof addInputId === 'function') {
+    addInputId(id)
+  }
+})
 </script>
