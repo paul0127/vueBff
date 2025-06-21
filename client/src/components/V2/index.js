@@ -17,6 +17,8 @@ export { default as BaseRadioGroup } from './common/Form/RadioGroup/BaseRadioGro
 export { default as BaseRadio } from './common/Form/RadioGroup/BaseRadio.vue'
 export { default as BaseCheckGroup } from './common/Form/CheckGroup/BaseCheckGroup.vue'
 export { default as BaseCheck } from './common/Form/CheckGroup/BaseCheck.vue'
+export { default as BaseSelect } from './common/Form/Select/BaseSelect.vue'
+export { default as BaseOption } from './common/Form/Select/BaseOption.vue'
 
 
 // 格線及分隔線

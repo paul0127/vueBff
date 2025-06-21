@@ -21,6 +21,14 @@
     <BaseFormItem label="日期範圍" prop="dateRange">
       <BaseDatePickerRange v-model="form.dateRange" />
     </BaseFormItem>
+    <BaseFormItem label="喜歡" prop="like">
+      <BaseSelect v-model="form.like" >
+        <BaseOption :value="null">請選擇</BaseOption>
+        <BaseOption value="1">選項1</BaseOption>
+        <BaseOption value="2">選項2</BaseOption>
+        <BaseOption value="3">選項3</BaseOption>
+      </BaseSelect>
+    </BaseFormItem>
     <button @click.prevent="send">送出</button>
   </BaseForm>
 </template>
@@ -36,6 +44,8 @@ import {
   BaseRadio,
   BaseDatePicker,
   BaseDatePickerRange,
+  BaseSelect,
+  BaseOption
 } from '@/components/V2/index.js'
 const form = ref({
   name: '',
@@ -43,6 +53,7 @@ const form = ref({
   sex: null,
   date: null,
   dateRange: [],
+  like: null,
 })
 const rules = {
   name: [
