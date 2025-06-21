@@ -101,7 +101,7 @@ const formatYMD = (date) => {
 }
 
 const parseMinguoYMD = (str) => {
-  const match = str.match(/^(\d{2,3})-(\d{1,2})-(\d{1,2})$/)
+  const match = str ? str.match(/^(\d{2,3})-(\d{1,2})-(\d{1,2})$/) : null
   if (!match) return null
   const y = parseInt(match[1]) + 1911
   const m = parseInt(match[2]) - 1
@@ -155,6 +155,7 @@ const nextYear = () => currentYear.value++
 // 當使用者手動輸入後離開 input，觸發解析
 const onBlur = () => {
   const parsed = parseMinguoYMD(inputText.value)
+  if (!parsed) inputText.value = null
   selectedDate.value = parsed ? parsed : null
   currentYear.value = parsed ? parsed.getFullYear() : today.getFullYear()
   currentMonth.value = parsed ? parsed.getMonth() : today.getMonth()

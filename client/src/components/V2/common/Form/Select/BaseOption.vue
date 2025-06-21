@@ -1,21 +1,17 @@
 <template>
-  <li
-    class="option"
-    :class="{ highlighted: isHighlighted }"
-    @click="select"
-  >
+  <li class="option" :class="{ highlighted: isHighlighted }" @click.stop="select">
     <slot />
   </li>
 </template>
 
 <script setup>
-import { inject, ref, onMounted, computed } from 'vue'
+import { inject, ref, onMounted, computed, useSlots } from 'vue'
 
 const props = defineProps({
   value: [String, Number],
-  disabled: Boolean
+  disabled: Boolean,
 })
-// const slots = useSlots()
+const slots = useSlots()
 
 const selectValue = inject('selectValue')
 const registerOption = inject('registerOption')
@@ -25,10 +21,10 @@ const label = ref('')
 const index = ref(-1)
 
 onMounted(() => {
-//   label.value = slots.default?.()[0]?.children || ''
+  label.value = slots.default?.()[0]?.children || ''
   index.value = registerOption?.({
     value: props.value,
-    label: label.value
+    label: label.value,
   })
 })
 

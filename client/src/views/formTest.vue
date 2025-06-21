@@ -22,12 +22,15 @@
       <BaseDatePickerRange v-model="form.dateRange" />
     </BaseFormItem>
     <BaseFormItem label="喜歡" prop="like">
-      <BaseSelect v-model="form.like" >
-        <BaseOption :value="null">請選擇</BaseOption>
-        <BaseOption value="1">選項1</BaseOption>
-        <BaseOption value="2">選項2</BaseOption>
-        <BaseOption value="3">選項3</BaseOption>
+      <BaseSelect v-model="form.like">
+        <BaseOption :value="null">全部</BaseOption>
+        <BaseOption :value="1">選項1</BaseOption>
+        <BaseOption :value="2">選項2</BaseOption>
+        <BaseOption :value="3">選項3</BaseOption>
       </BaseSelect>
+    </BaseFormItem>
+    <BaseFormItem label="姓名" prop="name">
+      <BaseInput id="123" v-model="form.name" />
     </BaseFormItem>
     <button @click.prevent="send">送出</button>
   </BaseForm>
@@ -45,7 +48,7 @@ import {
   BaseDatePicker,
   BaseDatePickerRange,
   BaseSelect,
-  BaseOption
+  BaseOption,
 } from '@/components/V2/index.js'
 const form = ref({
   name: '',
@@ -79,6 +82,13 @@ const rules = {
   ],
   dateRange: [
     { required: true, message: '請選擇日期範圍', trigger: ['blur', 'change'] },
+  ],
+  like: [
+    {
+      required: true,
+      message: '請選擇喜歡的選項',
+      trigger: ['blur', 'change'],
+    },
   ],
 }
 

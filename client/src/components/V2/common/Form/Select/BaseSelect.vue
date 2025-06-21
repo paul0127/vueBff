@@ -4,19 +4,44 @@
     tabindex="0"
     ref="root"
     @click="toggle"
-    @keydown.prevent="onKeydown"
+    @keydown="onKeydown"
   >
-    <ul v-if="open" class="dropdown">
+    <!-- 隱藏 input，給 label 的 for="id" 連結用 -->
+    <input
+      :id="id"
+      class="visually-hidden"
+      type="text"
+      @focus="focus"
+      @blur="blur"
+    />
+    <div class="selected">
+      {{ selectedLabel || placeholder }}
+    </div>
+    <ul v-show="open" class="dropdown">
       <slot />
     </ul>
   </div>
 </template>
 
 <script setup>
-import { ref, provide, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import {
+  ref,
+  provide,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  useId,
+  inject,
+} from 'vue'
 
 const props = defineProps({
-  modelValue: [String, Number]
+  id: [String, Number],
+  placeholder: {
+    type: String,
+    default: '',
+  },
+  modelValue: [String, Number],
 })
 const emit = defineEmits(['update:modelValue', 'focus', 'blur', 'change'])
 
@@ -26,7 +51,11 @@ const isFocused = ref(false)
 const highlightedIndex = ref(-1)
 
 const root = ref()
-const optionElements = ref([]) // 存選項的 ref 陣列（由子元件報名）
+const optionElements = ref([])
+const optionMap = ref(new Map())
+
+const generatedId = `select-${useId()}`
+const id = props.id || generatedId
 
 // ------- 點擊事件處理 -------
 const toggle = async () => {
@@ -34,22 +63,22 @@ const toggle = async () => {
   if (open.value) {
     focus()
     await nextTick()
-    // 開啟時自動將目前 modelValue 對應項目設為高亮
     highlightedIndex.value = optionElements.value.findIndex(
       (opt) => opt.value === props.modelValue
     )
   }
 }
 
-// ------- focus / blur 管理 -------
+// ------- 外部點擊關閉 -------
 const handleClickOutside = (e) => {
   if (!root.value?.contains(e.target)) {
     blur()
     open.value = false
   }
 }
-onMounted(() => document.addEventListener('click', handleClickOutside))
-onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
+
+// ------- focus / blur -------
+const elFormItem = inject('elFormItem', null)
 
 const focus = () => {
   if (!isFocused.value) {
@@ -61,19 +90,31 @@ const blur = () => {
   if (isFocused.value) {
     isFocused.value = false
     emit('blur')
+    elFormItem?.validate?.('blur')
   }
 }
 
 // ------- keyboard 支援 -------
 const onKeydown = (e) => {
-  if (!open.value) return
+  if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape', ' '].includes(e.key)) {
+    e.preventDefault()
+  }
+
+  if (!open.value) {
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+      toggle()
+    }
+    return
+  }
 
   const max = optionElements.value.length - 1
 
   if (e.key === 'ArrowDown') {
-    highlightedIndex.value = highlightedIndex.value < max ? highlightedIndex.value + 1 : 0
+    highlightedIndex.value =
+      highlightedIndex.value < max ? highlightedIndex.value + 1 : 0
   } else if (e.key === 'ArrowUp') {
-    highlightedIndex.value = highlightedIndex.value > 0 ? highlightedIndex.value - 1 : max
+    highlightedIndex.value =
+      highlightedIndex.value > 0 ? highlightedIndex.value - 1 : max
   } else if (e.key === 'Enter') {
     const opt = optionElements.value[highlightedIndex.value]
     if (opt) selectValue(opt.value, opt.label)
@@ -90,17 +131,52 @@ const selectValue = (val, label) => {
     emit('change', val)
   }
   selectedLabel.value = label
-  open.value = false
+
+  // 延遲處理 open = false
+  nextTick(() => {
+    open.value = false
+  })
+
   blur()
 }
 
+// ------- option 註冊與對應 -------
 provide('selectValue', selectValue)
-
-// 子元件會報名自己進來
-provide('registerOption', (option) => {
-  optionElements.value.push(option)
-})
 provide('highlightedIndex', highlightedIndex)
+provide('registerOption', (option) => {
+  if (!optionMap.value.has(option.value)) {
+    optionElements.value.push(option)
+    optionMap.value.set(option.value, option)
+
+
+    if (option.value === props.modelValue) {
+      selectedLabel.value = option.label
+    }
+  }
+  return optionElements.value.length - 1
+})
+
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    const opt = optionMap.value.get(newVal)
+    selectedLabel.value = opt?.label || ''
+
+    elFormItem?.validate?.('change')
+  }
+)
+
+// ------- 提供 id 給 form item -------
+const addInputId = inject('addInputId')
+onMounted(async () => {
+  document.addEventListener('click', handleClickOutside)
+  if (typeof addInputId === 'function') {
+    addInputId(id)
+  }
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <style scoped>
@@ -115,6 +191,7 @@ provide('highlightedIndex', highlightedIndex)
 .selected {
   padding: 8px;
   background-color: #fff;
+  height: 40px;
 }
 .dropdown {
   position: absolute;
@@ -126,5 +203,18 @@ provide('highlightedIndex', highlightedIndex)
   max-height: 200px;
   overflow-y: auto;
   z-index: 10;
+  list-style: none;
+  padding-left: 0;
+}
+.visually-hidden {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  margin: -1px;
 }
 </style>
