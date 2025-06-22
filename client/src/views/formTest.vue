@@ -15,11 +15,22 @@
         <BaseRadio value="0">女</BaseRadio>
       </BaseRadioGroup>
     </BaseFormItem>
+    <BaseFormItem label="年份" prop="year">
+      <BaseYearPicker v-model="form.year"  />
+    </BaseFormItem>
     <BaseFormItem label="日期" prop="date">
-      <BaseDatePicker v-model="form.date" rangeStart="2024-01-01" rangeEnd="2025-06-23" />
+      <BaseDatePicker
+        v-model="form.date"
+        rangeStart="2024-01-01"
+        rangeEnd="2025-06-23"
+      />
     </BaseFormItem>
     <BaseFormItem label="日期範圍" prop="dateRange">
-      <BaseDatePickerRange v-model="form.dateRange" rangeStart="2023-01-01" rangeEnd="2025-06-23" />
+      <BaseDatePickerRange
+        v-model="form.dateRange"
+        rangeStart="2023-01-01"
+        rangeEnd="2025-06-23"
+      />
     </BaseFormItem>
     <BaseFormItem label="喜歡" prop="like">
       <BaseSelect v-model="form.like">
@@ -47,6 +58,7 @@ import {
   BaseRadio,
   BaseDatePicker,
   BaseDatePickerRange,
+  BaseYearPicker,
   BaseSelect,
   BaseOption,
 } from '@/components/V2/index.js'
@@ -55,8 +67,9 @@ const form = ref({
   interest: [],
   sex: null,
   date: null,
-  dateRange: ['2024-01-01','2024-01-31'],
+  dateRange: ['2024-01-01', '2024-01-31'],
   like: null,
+  year: null,
 })
 const rules = {
   name: [
