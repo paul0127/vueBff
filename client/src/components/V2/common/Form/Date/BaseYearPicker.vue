@@ -18,7 +18,7 @@
           v-for="year in visibleYears"
           :key="year"
           class="cell"
-          :class="{ disabled: isDisabled(year), selected: year === modelValue }"
+          :class="{ disabled: isDisabled(year), selected: year === Number(modelValue) }"
           @click="selectYear(year)"
         >
           {{ year - 1911 }} 年
@@ -66,12 +66,13 @@ const emit = defineEmits(['update:modelValue'])
 const open = ref(false)
 const picker = ref(null)
 
-const minYear = props.rangeStart ?? 1950
+const currentYear = new Date().getFullYear()
+const minYear = props.rangeStart ?? (currentYear - 100) // 最近 100 年
 const maxYear = props.rangeEnd ?? new Date().getFullYear() + 20
 
 // pagination 起始位置（每頁 12 年）
 const pageStart = ref(
-  Math.floor((props.modelValue ?? new Date().getFullYear() - 1911) / 12) * 12 +
+  Math.floor(((props.modelValue ?? new Date().getFullYear()) - 1911) / 12) * 12 +
     1911
 )
 
