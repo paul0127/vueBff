@@ -15,11 +15,11 @@
 
     <div v-if="open" class="calendar">
       <div class="calendar-header">
-        <button @click.prevent="prevYear">«</button>
-        <button @click.prevent="prevMonth">←</button>
+        <button @click.prevent="prevYear" :disabled="!canPrevYear">«</button>
+        <button @click.prevent="prevMonth" :disabled="!canPrevMonth">←</button>
         <span>民國 {{ minguoYear }} 年 {{ currentMonth + 1 }} 月</span>
-        <button @click.prevent="nextMonth">→</button>
-        <button @click.prevent="nextYear">»</button>
+        <button @click.prevent="nextMonth" :disabled="!canNextMonth">→</button>
+        <button @click.prevent="nextYear" :disabled="!canNextYear">»</button>
       </div>
 
       <div class="calendar-grid">
@@ -33,8 +33,14 @@
           v-for="day in daysInMonth"
           :key="day"
           class="day"
-          :class="{ selected: isSelected(day) }"
-          @click="selectDate(day)"
+          :class="{
+            selected: isSelected(day),
+            'range-start': isRangeStart(day),
+            'range-end': isRangeEnd(day),
+            'in-range': isInRange(day),
+            'out-of-range': !isInRange(day),
+          }"
+          @click="isInRange(day) && selectDate(day)"
         >
           {{ day }}
         </div>
@@ -59,11 +65,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  rangeStart: String, // yyyy-mm-dd
+  rangeEnd: String, // yyyy-mm-dd
 })
 
 const model = defineModel() // 父層傳入 v-model
 
-const emit = defineEmits(['change','blur'])
+const emit = defineEmits(['change', 'blur'])
 
 const open = ref(false)
 const selectedDate = ref(null)
@@ -84,6 +92,41 @@ const daysInMonth = computed(() =>
 const startOffset = computed(() =>
   new Date(currentYear.value, currentMonth.value, 1).getDay()
 )
+
+const normalizeDate = (date) => {
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+const isInRange = (day) => {
+  const d = normalizeDate(new Date(currentYear.value, currentMonth.value, day))
+
+  const start = props.rangeStart ? normalizeDate(props.rangeStart) : null
+  const end = props.rangeEnd ? normalizeDate(props.rangeEnd) : null
+
+  if (!start && !end) return true
+
+  if (start && !end) return d >= start
+
+  if (!start && end) return d <= end
+
+  if (start && end) return d >= start && d <= end
+
+  return false
+}
+
+const isRangeStart = (day) => {
+  if (!props.rangeStart) return false
+  const d = new Date(currentYear.value, currentMonth.value, day)
+  return formatYMD(d) === props.rangeStart
+}
+
+const isRangeEnd = (day) => {
+  if (!props.rangeEnd) return false
+  const d = new Date(currentYear.value, currentMonth.value, day)
+  return formatYMD(d) === props.rangeEnd
+}
 
 const formatMinguoYMD = (date) => {
   const y = date.getFullYear() - 1911
@@ -152,6 +195,43 @@ const nextMonth = () => {
 }
 const prevYear = () => currentYear.value--
 const nextYear = () => currentYear.value++
+
+const minDate = computed(() =>
+  props.rangeStart ? new Date(props.rangeStart) : null
+)
+const maxDate = computed(() =>
+  props.rangeEnd ? new Date(props.rangeEnd) : null
+)
+
+// 限制年份
+const canPrevYear = computed(() => {
+  if (!minDate.value) return true
+  return currentYear.value > minDate.value.getFullYear()
+})
+
+const canNextYear = computed(() => {
+  if (!maxDate.value) return true
+  return currentYear.value < maxDate.value.getFullYear()
+})
+
+// 限制月份
+const canPrevMonth = computed(() => {
+  if (!minDate.value) return true
+  return (
+    currentYear.value > minDate.value.getFullYear() ||
+    (currentYear.value === minDate.value.getFullYear() &&
+      currentMonth.value > minDate.value.getMonth())
+  )
+})
+
+const canNextMonth = computed(() => {
+  if (!maxDate.value) return true
+  return (
+    currentYear.value < maxDate.value.getFullYear() ||
+    (currentYear.value === maxDate.value.getFullYear() &&
+      currentMonth.value < maxDate.value.getMonth())
+  )
+})
 
 // 當使用者手動輸入後離開 input，觸發解析
 const onBlur = () => {
@@ -281,6 +361,14 @@ input {
   margin: 2px;
   border-radius: 4px;
   cursor: pointer;
+
+  &.in-range {
+    // background-color: #cce5ff;
+  }
+  &.out-of-range {
+    color: #ccc;
+    pointer-events: none;
+  }
 }
 
 .day:hover {

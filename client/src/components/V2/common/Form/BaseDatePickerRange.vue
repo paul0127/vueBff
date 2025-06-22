@@ -1,8 +1,20 @@
 <template>
   <div class="datePickerRange">
-    <BaseDatePicker v-model="startTemp" @change="onChange" @blur="onBlur" />
+    <BaseDatePicker
+      v-model="startTemp"
+      :range-start="rangeStart"
+      :range-end="minDate(model?.[1], rangeEnd)"
+      @change="onChange"
+      @blur="onChange"
+    />
     ~
-    <BaseDatePicker v-model="endTemp" @change="onChange" @blur="onBlur" />
+    <BaseDatePicker
+      v-model="endTemp"
+      :range-start="maxDate(model?.[0], rangeStart)"
+      :range-end="rangeEnd"
+      @change="onChange"
+      @blur="onChange"
+    />
   </div>
 </template>
 
@@ -10,13 +22,43 @@
 import { ref, watch } from 'vue'
 import BaseDatePicker from './BaseDatePicker.vue'
 
+const props = defineProps({
+  rangeStart: String, // yyyy-mm-dd
+  rangeEnd: String, // yyyy-mm-dd
+})
+
 const model = defineModel()
 const emit = defineEmits(['change'])
 
 const startTemp = ref(null)
 const endTemp = ref(null)
 
-// 初始同步 model 到暫存
+const parse = (v) => (v ? new Date(v) : null)
+
+// 傳回較小者（排除 null）
+const minDate = (a, b) => {
+  const d1 = parse(a)
+  const d2 = parse(b)
+  if (d1 && d2) return d1 < d2 ? format(d1) : format(d2)
+  return format(d1 || d2)
+}
+
+// 傳回較大者（排除 null）
+const maxDate = (a, b) => {
+  const d1 = parse(a)
+  const d2 = parse(b)
+  if (d1 && d2) return d1 > d2 ? format(d1) : format(d2)
+  return format(d1 || d2)
+}
+
+// 日期轉回 yyyy-mm-dd
+const format = (d) => {
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
 watch(
   model,
   (val) => {
@@ -33,10 +75,6 @@ const onChange = () => {
   } else {
     model.value = null
   }
-}
-
-const onBlur = () => {
-  
 }
 </script>
 

@@ -16,10 +16,10 @@
       </BaseRadioGroup>
     </BaseFormItem>
     <BaseFormItem label="日期" prop="date">
-      <BaseDatePicker v-model="form.date" />
+      <BaseDatePicker v-model="form.date" rangeStart="2024-01-01" rangeEnd="2025-06-23" />
     </BaseFormItem>
     <BaseFormItem label="日期範圍" prop="dateRange">
-      <BaseDatePickerRange v-model="form.dateRange" />
+      <BaseDatePickerRange v-model="form.dateRange" rangeStart="2023-01-01" rangeEnd="2025-06-23" />
     </BaseFormItem>
     <BaseFormItem label="喜歡" prop="like">
       <BaseSelect v-model="form.like">
@@ -55,7 +55,7 @@ const form = ref({
   interest: [],
   sex: null,
   date: null,
-  dateRange: [],
+  dateRange: ['2024-01-01','2024-01-31'],
   like: null,
 })
 const rules = {
