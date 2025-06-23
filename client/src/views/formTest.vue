@@ -16,7 +16,10 @@
       </BaseRadioGroup>
     </BaseFormItem>
     <BaseFormItem label="年份" prop="year">
-      <BaseYearPicker v-model="form.year"  />
+      <BaseYearPicker v-model="form.year" :rangeStart="2010" :rangeEnd="2019"  />
+    </BaseFormItem>
+    <BaseFormItem label="年份" prop="year">
+      <BaseYearPickerRange v-model="form.yearRange"  />
     </BaseFormItem>
     <BaseFormItem label="日期" prop="date">
       <BaseDatePicker
@@ -59,6 +62,7 @@ import {
   BaseDatePicker,
   BaseDatePickerRange,
   BaseYearPicker,
+  BaseYearPickerRange,
   BaseSelect,
   BaseOption,
 } from '@/components/V2/index.js'
@@ -67,9 +71,10 @@ const form = ref({
   interest: [],
   sex: null,
   date: null,
-  dateRange: ['2024-01-01', '2024-01-31'],
+  dateRange: [],
   like: null,
   year: '',
+  yearRange:null
 })
 const rules = {
   name: [

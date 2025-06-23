@@ -14,6 +14,7 @@ export { default as BaseInput } from './common/Form/BaseInput.vue'
 export { default as BaseDatePicker } from './common/Form/Date/BaseDatePicker.vue'
 export { default as BaseDatePickerRange } from './common/Form/Date/BaseDatePickerRange.vue'
 export { default as BaseYearPicker } from './common/Form/Date/BaseYearPicker.vue'
+export { default as BaseYearPickerRange } from './common/Form/Date/BaseYearPickerRange.vue'
 // 下拉
 export { default as BaseSelect } from './common/Form/Select/BaseSelect.vue'
 export { default as BaseOption } from './common/Form/Select/BaseOption.vue'

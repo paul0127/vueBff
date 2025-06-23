@@ -2,16 +2,16 @@
   <div class="datePickerRange">
     <BaseYearPicker
       v-model="startTemp"
-      :range-start="rangeStart"
-      :range-end="minDate(model?.[1], rangeEnd)"
+      :rangeStart="rangeStart"
+      :rangeEnd="minNumber(endTemp, rangeEnd)"
       @change="onChange"
       @blur="onChange"
     />
     ~
     <BaseYearPicker
       v-model="endTemp"
-      :range-start="maxDate(model?.[0], rangeStart)"
-      :range-end="rangeEnd"
+      :rangeStart="maxNumber(startTemp, rangeStart)"
+      :rangeEnd="rangeEnd"
       @change="onChange"
       @blur="onChange"
     />
@@ -20,45 +20,30 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import BaseYearPicker from './BaseDatePicker.vue'
+import BaseYearPicker from './BaseYearPicker.vue'
 
+// 🧩 Props 接收 yyyy-mm-dd 字串
 const props = defineProps({
-  rangeStart: Number, // yyyy
-  rangeEnd: Number, // yyyy
+  rangeStart: Number, // 2010
+  rangeEnd: Number,   // 2020
 })
 
+// 🧩 v-model: [number, number]
 const model = defineModel()
 const emit = defineEmits(['change'])
 
 const startTemp = ref(null)
 const endTemp = ref(null)
 
-const parse = (v) => (v ? new Date(v) : null)
-
-// 傳回較小者（排除 null）
-const minDate = (a, b) => {
-  const d1 = parse(a)
-  const d2 = parse(b)
-  if (d1 && d2) return d1 < d2 ? format(d1) : format(d2)
-  return format(d1 || d2)
+const minNumber = (d1, d2) => {
+  return d1 && d2 ? (d1 < d2 ? d1 : d2) : d1 || d2
 }
 
-// 傳回較大者（排除 null）
-const maxDate = (a, b) => {
-  const d1 = parse(a)
-  const d2 = parse(b)
-  if (d1 && d2) return d1 > d2 ? format(d1) : format(d2)
-  return format(d1 || d2)
+const maxNumber = (d1, d2) => {
+  return d1 && d2 ? (d1 > d2 ? d1 : d2) : d1 || d2
 }
 
-// 日期轉回 yyyy-mm-dd
-const format = (d) => {
-  const yyyy = d.getFullYear()
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
-}
-
+// 同步外部 model 到內部 temp
 watch(
   model,
   (val) => {
@@ -68,6 +53,7 @@ watch(
   { immediate: true }
 )
 
+// 處理變更，只有合法年份才設定
 const onChange = () => {
   if (startTemp.value && endTemp.value) {
     model.value = [startTemp.value, endTemp.value]
@@ -81,5 +67,6 @@ const onChange = () => {
 <style lang="scss" scoped>
 .datePickerRange {
   display: flex;
+  gap: 4px;
 }
 </style>

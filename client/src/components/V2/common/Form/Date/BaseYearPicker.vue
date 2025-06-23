@@ -18,7 +18,11 @@
           v-for="year in visibleYears"
           :key="year"
           class="cell"
-          :class="{ disabled: isDisabled(year), selected: year === Number(modelValue) }"
+          :class="{
+            disabled: isDisabled(year),
+            selected: year === Number(modelValue)
+          }"
+          :style="isDisabled(year) ? 'pointer-events: none;' : ''"
           @click="selectYear(year)"
         >
           {{ year - 1911 }} 年
@@ -26,13 +30,8 @@
       </div>
 
       <div class="navBtns">
-        <button @click.prevent="prevPage" :disabled="visibleYears[0] <= minYear">‹</button>
-        <button
-          @click.prevent="nextPage"
-          :disabled="visibleYears[visibleYears.length - 1] >= maxYear"
-        >
-          ›
-        </button>
+        <button @click.prevent="prevPage" :disabled="pageStart <= minYear">‹</button>
+        <button @click.prevent="nextPage" :disabled="pageStart + 12 > maxYear">›</button>
       </div>
     </div>
   </div>
@@ -47,7 +46,15 @@ const props = defineProps({
   rangeEnd: Number,
 })
 
+const emit = defineEmits(['update:modelValue','change','blur'])
+
 const inputText = ref(props.modelValue ? String(props.modelValue - 1911) : '')
+const open = ref(false)
+const picker = ref(null)
+
+const currentYear = new Date().getFullYear()
+const minYear = props.rangeStart ?? currentYear - 100
+const maxYear = props.rangeEnd ?? currentYear + 20
 
 watch(
   () => props.modelValue,
@@ -56,34 +63,31 @@ watch(
   }
 )
 
-const emit = defineEmits(['update:modelValue'])
+const pageStart = ref(0)
 
-const open = ref(false)
-const picker = ref(null)
-
-const currentYear = new Date().getFullYear()
-const minYear = props.rangeStart ?? currentYear - 100 // 最近 100 年
-const maxYear = props.rangeEnd ?? new Date().getFullYear() + 20
-
-// pagination 起始位置（每頁 12 年）
-const pageStart = ref(
-  Math.floor(((props.modelValue || new Date().getFullYear()) - 1911) / 12) * 12 + 1911
+watch(
+  () => [props.modelValue, props.rangeStart, props.rangeEnd],
+  ([modelVal, start, end]) => {
+    const base = start ?? currentYear
+    const model = modelVal ?? base
+    const rawStart = Math.floor((Math.max(model, base) - 1911) / 12) * 12 + 1911
+    const maxPageStart = Math.floor(((maxYear) - 1911) / 12) * 12 + 1911
+    pageStart.value = Math.min(rawStart, maxPageStart)
+  },
+  { immediate: true }
 )
 
 const visibleYears = computed(() => {
-  console.log(pageStart.value)
   const years = []
   for (let i = 0; i < 12; i++) {
-    const y = pageStart.value + i
-    if (y >= minYear && y <= maxYear) years.push(y)
+    years.push(pageStart.value + i)
   }
   return years
 })
 
 const isDisabled = (year) => year < minYear || year > maxYear
-const displayYear = computed(() => (props.modelValue ? props.modelValue - 1911 : ''))
-
 const toggleOpen = () => (open.value = !open.value)
+
 const selectYear = (year) => {
   if (isDisabled(year)) return
   emit('update:modelValue', year)
@@ -91,36 +95,33 @@ const selectYear = (year) => {
 }
 
 const prevPage = () => {
-  if (pageStart.value - 12 >= minYear) {
+  if (pageStart.value - 12 >= Math.floor((minYear - 1911) / 12) * 12 + 1911) {
     pageStart.value -= 12
   }
 }
 const nextPage = () => {
-  if (pageStart.value + 12 <= maxYear) {
+  if (pageStart.value + 12 <= Math.floor((maxYear - 1911) / 12) * 12 + 1911) {
     pageStart.value += 12
   }
 }
 
-// 手動輸入觸發轉換
 const onInput = () => {
   const num = parseInt(inputText.value)
   if (!isNaN(num)) {
     const westernYear = num + 1911
     if (!isDisabled(westernYear)) {
       emit('update:modelValue', westernYear)
-      pageStart.value = Math.floor(num / 12) * 12 + 1911
+      pageStart.value = Math.floor(westernYear / 12) * 12
     }
   }
 }
 
-// 按 Enter 鍵時觸發確認
 const onEnter = (e) => {
   e.preventDefault()
   onInput()
   open.value = false
 }
 
-// 點擊外部關閉
 const handleClickOutside = (e) => {
   if (picker.value && !picker.value.contains(e.target)) {
     open.value = false
@@ -189,6 +190,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
       &.disabled {
         color: #ccc;
         pointer-events: none;
+        background: none;
       }
       &.selected {
         background: #007bff;
