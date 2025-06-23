@@ -10,16 +10,19 @@ export { default as SearchBtn } from './common/Buttons/SearchBtn.vue'
 export { default as BaseForm } from './common/Form/BaseForm.vue'
 export { default as BaseFormItem } from './common/Form/BaseFormItem.vue'
 export { default as BaseInput } from './common/Form/BaseInput.vue'
+// 日曆
 export { default as BaseDatePicker } from './common/Form/Date/BaseDatePicker.vue'
 export { default as BaseDatePickerRange } from './common/Form/Date/BaseDatePickerRange.vue'
 export { default as BaseYearPicker } from './common/Form/Date/BaseYearPicker.vue'
-export { default as BaseRadioGroup } from './common/Form/RadioGroup/BaseRadioGroup.vue'
-export { default as BaseRadio } from './common/Form/RadioGroup/BaseRadio.vue'
-export { default as BaseCheckGroup } from './common/Form/CheckGroup/BaseCheckGroup.vue'
-export { default as BaseCheck } from './common/Form/CheckGroup/BaseCheck.vue'
+// 下拉
 export { default as BaseSelect } from './common/Form/Select/BaseSelect.vue'
 export { default as BaseOption } from './common/Form/Select/BaseOption.vue'
-
+// checkBox
+export { default as BaseCheckGroup } from './common/Form/CheckGroup/BaseCheckGroup.vue'
+export { default as BaseCheck } from './common/Form/CheckGroup/BaseCheck.vue'
+// radioBox
+export { default as BaseRadioGroup } from './common/Form/RadioGroup/BaseRadioGroup.vue'
+export { default as BaseRadio } from './common/Form/RadioGroup/BaseRadio.vue'
 
 // 格線及分隔線
 export { default as BaseRow } from './common/Row/BaseRow.vue'

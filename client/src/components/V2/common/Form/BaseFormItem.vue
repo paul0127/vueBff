@@ -13,7 +13,7 @@
       {{ label }}
     </label>
     <div class="input-area ms-2">
-      <div>
+      <div class="input">
         <slot :validateItem="validateItem" />
       </div>
       <div class="error_message" v-show="isErr">
@@ -177,6 +177,10 @@ onBeforeUnmount(() => {
 .input-area {
   flex: 1;
   position: relative;
+  .input{
+    display: flex;
+    flex-wrap: wrap;
+  }
 }
 .error_message {
   position: absolute;

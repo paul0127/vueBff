@@ -41,6 +41,7 @@ const isHighlighted = computed(() => highlightedIndex?.value === index.value)
 .option {
   padding: 8px;
   cursor: pointer;
+  text-align: left;
 }
 .option:hover,
 .option.highlighted {

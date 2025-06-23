@@ -69,7 +69,7 @@ const form = ref({
   date: null,
   dateRange: ['2024-01-01', '2024-01-31'],
   like: null,
-  year: '2020',
+  year: '',
 })
 const rules = {
   name: [

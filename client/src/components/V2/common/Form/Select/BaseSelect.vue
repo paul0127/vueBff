@@ -1,6 +1,6 @@
 <template>
   <div
-    class="base-select"
+    class="base-select form-select"
     tabindex="0"
     ref="root"
     @click="toggle"
@@ -187,11 +187,13 @@ onBeforeUnmount(() => {
   border: 1px solid #ccc;
   cursor: pointer;
   user-select: none;
+  padding: 0 2.25rem 0 0.75rem;
 }
 .selected {
   padding: 8px;
   background-color: #fff;
   height: 40px;
+  text-align: left;
 }
 .dropdown {
   position: absolute;
@@ -202,7 +204,7 @@ onBeforeUnmount(() => {
   border: 1px solid #ccc;
   max-height: 200px;
   overflow-y: auto;
-  z-index: 10;
+  z-index: 11;
   list-style: none;
   padding-left: 0;
 }

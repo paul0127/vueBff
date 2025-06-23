@@ -1,6 +1,6 @@
 <template>
   <div class="minguo-year-grid-picker" ref="picker">
-    <div class="trigger" @click="toggleOpen">
+    <div class="form-control trigger" @click="toggleOpen">
       <input
         type="text"
         class="input"
@@ -25,13 +25,8 @@
         </div>
       </div>
 
-      <div class="nav">
-        <button
-          @click.prevent="prevPage"
-          :disabled="visibleYears[0] <= minYear"
-        >
-          ‹
-        </button>
+      <div class="navBtns">
+        <button @click.prevent="prevPage" :disabled="visibleYears[0] <= minYear">‹</button>
         <button
           @click.prevent="nextPage"
           :disabled="visibleYears[visibleYears.length - 1] >= maxYear"
@@ -67,16 +62,16 @@ const open = ref(false)
 const picker = ref(null)
 
 const currentYear = new Date().getFullYear()
-const minYear = props.rangeStart ?? (currentYear - 100) // 最近 100 年
+const minYear = props.rangeStart ?? currentYear - 100 // 最近 100 年
 const maxYear = props.rangeEnd ?? new Date().getFullYear() + 20
 
 // pagination 起始位置（每頁 12 年）
 const pageStart = ref(
-  Math.floor(((props.modelValue ?? new Date().getFullYear()) - 1911) / 12) * 12 +
-    1911
+  Math.floor(((props.modelValue || new Date().getFullYear()) - 1911) / 12) * 12 + 1911
 )
 
 const visibleYears = computed(() => {
+  console.log(pageStart.value)
   const years = []
   for (let i = 0; i < 12; i++) {
     const y = pageStart.value + i
@@ -86,9 +81,7 @@ const visibleYears = computed(() => {
 })
 
 const isDisabled = (year) => year < minYear || year > maxYear
-const displayYear = computed(() =>
-  props.modelValue ? props.modelValue - 1911 : ''
-)
+const displayYear = computed(() => (props.modelValue ? props.modelValue - 1911 : ''))
 
 const toggleOpen = () => (open.value = !open.value)
 const selectYear = (year) => {
@@ -157,7 +150,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 
   .input {
     border: none;
-    width: 60px;
+    width: calc(100% - 30px);
     text-align: right;
     font-size: 1rem;
     outline: none;
@@ -207,7 +200,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   }
 }
 
-.nav {
+.navBtns {
   display: flex;
   justify-content: space-between;
   margin-top: 10px;
